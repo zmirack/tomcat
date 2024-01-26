@@ -1,0 +1,26 @@
+---
+- hosts: localhost
+  connection: ssh
+
+  vars:
+    context_file: apache-tomcat-9.0.84/webapps/manager/META-INF/context.xml
+  tasks:
+
+    - name: install tomcat
+      shell: "https://downloads.apache.org/tomcat/tomcat-9/v9.0.84/bin/apache-tomcat-9.0.84.tar.gz \n tar -zxvf apache-tomcat-9.0.84.tar.gz"
+
+
+    - name: Copy lines  and paste under line 100
+      shell: sed -n '50,52p' tomcat/conf/tomcat-users.xml | tee -a >(sed -n '55p' tomcat/conf/tomcat-users.xml) > /dev/null
+
+    - name: Copy lines 50-52
+      shell: sed -n '50,52p' apache-tomcat-9.0.84/conf/tomcat-users.xml > /tmp/lines50-52.txt
+    - name: Paste lines 50-52 under line 55 in same file
+      shell: sed -i '55 r /tmp/lines50-52.txt' apache-tomcat-9.0.84/conf/tomcat-users.xml && sed -i '55 a 56 <role rolename="manager-gui"/> 57 <role rolename="manager-script"/> 58 <user username="admin" password="123456" roles="manager-gui, manager-script"/>' apache-tomcat-9.0.84/conf/tomcat-users.xml
+
+    - name: Delete lines 21 and 22
+      shell: sed '21d;22d' {{ context_file }} > {{ context_file}}.new && mv {{ context_file }}.new {{ context_file }}
+
+    - name: start tomcat
+      command: "apache-tomcat-9.0.84/bin/catalina.sh start"
+

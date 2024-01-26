@@ -1,0 +1,27 @@
+---
+- hosts: test
+  connection: ssh
+  tasks:
+    - name: Install Java
+      yum:
+        name: java-1.8.0-openjdk
+        state: present
+        update_cache: yes
+    - name: Download Tomcat
+      get_url:
+        url: "https://downloads.apache.org/tomcat/tomcat-9/v9.0.85/bin/apache-tomcat-9.0.85.tar.gz"
+        dest: /root/ 
+    - name: Extract Tomcat
+      unarchive:
+        src: "/root/apache-tomcat-9.0.85.tar.gz"
+        dest: /root/
+        remote_src: yes
+    - name: Configure Tomcat users
+      lineinfile:
+        path: /root/apache-tomcat-9.0.85/conf/tomcat-users.xml
+        insertafter: "<tomcat-users>"
+        line: "<user username=\"admin\" password=\"icangivespecify\" roles=\"manager-gui,admin-gui\"/>"
+    - name: Enable and start Tomcat service
+      shell: |
+        cd /root/apache-tomcat-9.0.85/bin/
+        ./startup.sh      

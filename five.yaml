@@ -1,0 +1,17 @@
+---
+- hosts: dev
+  connection: ssh
+
+
+ 
+  tasks:
+    - name: create file
+      file:
+        name: "{{item}}"
+        state: touch
+      loop:
+        - aws
+        - azure
+        - gcp
+        - ibm    
+
